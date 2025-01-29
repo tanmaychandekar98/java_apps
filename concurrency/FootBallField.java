@@ -1,3 +1,4 @@
+package concurrency;
 /*
  * Click `Run` to execute the snippet below!
  */
@@ -57,6 +58,29 @@
   */
  
  class Solution {
+
+  private static void startScan(String p, int t, Field field) {
+    Thread th = new Thread(()->{
+      field.scan(p, t);
+    });
+    th.start();
+  }
+
+  private static void startExit(String p, int t, Field field) {
+    Thread th = new Thread(()->{
+      field.exit(p, t);
+    });
+    th.start();
+  }
+
+  private static void sleep(int t) {
+    try {
+      Thread.sleep(t);
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
    public static void main(String[] args) {
      // ArrayList<String> strings = new ArrayList<String>();
      // strings.add("Hello, World!");
@@ -68,6 +92,21 @@
      // }
  
      Field field = new Field(10);
+
+     startScan("0-0", 0, field);
+     startScan("0-1", 0, field);
+     startScan("0-2", 0, field);
+ 
+     startScan("1-0", 1, field);
+     startScan("0-3", 0, field);
+
+     sleep(1000);
+ 
+     startExit("0-0", 0, field);
+     startExit("0-1", 0, field);
+     startExit("0-2", 0, field);
+     startExit("0-3", 0, field);
+     startExit("1-0", 1, field);
  
     //  field.scan("0-0", 0);
     //  field.scan("0-1", 0);
@@ -85,37 +124,37 @@
  
  
  
-     for(int i=0; i<20; i++) {
-       int playerNo = i;
-       Thread teamA = new Thread(() -> {
-         field.scan("Player" + playerNo, 0);
-         try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-         field.exit("Player" + playerNo, 0);
-       });
+    //  for(int i=0; i<20; i++) {
+    //    int playerNo = i;
+    //    Thread teamA = new Thread(() -> {
+    //      field.scan("Player" + playerNo, 0);
+    //      try {
+    //         Thread.sleep(5000);
+    //     } catch (InterruptedException e) {
+    //         // TODO Auto-generated catch block
+    //         e.printStackTrace();
+    //     }
+    //      field.exit("Player" + playerNo, 0);
+    //    });
  
-       teamA.start();
-     }
+    //    teamA.start();
+    //  }
 
-     for(int i=0; i<20; i++) {
-        int playerNo = i;
-        Thread teamA = new Thread(() -> {
-          field.scan("Player" + playerNo, 1);
-          try {
-             Thread.sleep(5000);
-         } catch (InterruptedException e) {
-             // TODO Auto-generated catch block
-             e.printStackTrace();
-         }
-          field.exit("Player" + playerNo, 1);
-        });
+    //  for(int i=0; i<20; i++) {
+    //     int playerNo = i;
+    //     Thread teamA = new Thread(() -> {
+    //       field.scan("Player" + playerNo, 1);
+    //       try {
+    //          Thread.sleep(5000);
+    //      } catch (InterruptedException e) {
+    //          // TODO Auto-generated catch block
+    //          e.printStackTrace();
+    //      }
+    //       field.exit("Player" + playerNo, 1);
+    //     });
   
-        teamA.start();
-      }
+    //     teamA.start();
+    //   }
  
      // for(int i=0; i<10; i++) {
      //   int playerNo = i;

@@ -2,38 +2,49 @@ package concurrency.lruCache;
 
 import java.util.*;
 
+class Node<K, V> {
+    K key;
+    V value;
+    Node<K, V> prev, next;
 
+    public Node(K key, V value, Node<K, V> next, Node<K, V> prev) {
+        this.key = key;
+        this.value = value;
+        this.next = next;
+        this.prev = prev;
+    }
+}
 
-public class LRUCache {
+public class ConcurrentLRUCache<K, V> {
     int size;
-    Map<Integer, Node> cacheMap;
-    Node head, tail;
+    volatile Map<K, Node<K, V>> cacheMap;
+    Node<K, V> head, tail;
 
-    LRUCache(int size) {
+    ConcurrentLRUCache(int size) {
         this.size = size;
         cacheMap = new HashMap<>();
-        head = new Node(0, 0, null, null);
-        tail = new Node(0, 0, null, head);
+        head = new Node<K, V>(null, null, null, null);
+        tail = new Node<K, V>(null, null, null, head);
         head.next = tail;
     }
     
-    public int get(int key) {
-        if(!cacheMap.containsKey(key)) return -1;
+    public synchronized V get(K key) {
+        if(!cacheMap.containsKey(key)) return null;
 
-        Node curr = cacheMap.get(key);
+        Node<K, V> curr = cacheMap.get(key);
         moveToHead(curr);
 
         return curr.value;
     }
 
-    public void put(int key, int value) {
+    public synchronized void put(K key, V value) {
 
         if (cacheMap.containsKey(key)) {
-            Node curr = cacheMap.get(key);
+            Node<K, V> curr = cacheMap.get(key);
             curr.value = value;
             moveToHead(curr);
         } else {
-            Node newNode = new Node(key, value, head.next, head);
+            Node<K, V> newNode = new Node<K, V>(key, value, head.next, head);
             head.next.prev = newNode;
             head.next = newNode;
 
@@ -46,7 +57,7 @@ public class LRUCache {
 
     }
 
-    private void moveToHead(Node node) {
+    private void moveToHead(Node<K, V> node) {
         if(node == null || node.prev==head) return;
         node.prev.next = node.next;
         node.next.prev = node.prev;
@@ -63,7 +74,7 @@ public class LRUCache {
             return;
         }
 
-        Node lastNode = tail.prev;
+        Node<K, V> lastNode = tail.prev;
 
         lastNode.prev.next = tail;
         tail.prev = lastNode.prev;
@@ -72,7 +83,7 @@ public class LRUCache {
     }
 
     public void print() {
-        Node temp = head.next;
+        Node<K, V> temp = head.next;
         StringBuilder sb = new StringBuilder();
         while (temp != tail) {
             sb.append("[" + temp.key + ", ");
@@ -81,17 +92,5 @@ public class LRUCache {
         }
         sb.append("end");
         System.out.println(sb.toString());
-    }
-
-    private class Node {
-        int key, value;
-        Node prev, next;
-    
-        Node(int key, int value, Node next, Node prev) {
-            this.key = key;
-            this.value = value;
-            this.next = next;
-            this.prev = prev;
-        }
     }
 }
